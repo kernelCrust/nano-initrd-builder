@@ -1,0 +1,17 @@
+#!/bin/sh
+
+DEFAULT_SQUASH_PATH=/live/filesystem.squashfs
+
+live=""
+for param in $(cat /proc/cmdline); do
+	case "$param" in
+		live|live=)
+			live="$DEFAULT_SQUASH_PATH"
+			;;
+		live=*)
+			live="${param#live=}"
+			;;
+	esac
+done
+
+echo "$live"

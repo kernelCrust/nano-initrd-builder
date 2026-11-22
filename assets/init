@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# # # # # # # # # # # # # #
+# root=none			- unshare container shell
+# root=				- loading into shell
+# root=/dev/sda1	- device with rootfs
+# live=				- default squash /live/filesystem.squashfs
+# live=/alt/sys.sqsh- explicite squash /alt/sys.sqsh
+# # # # # # # # # # # # # #
+
+# # # # # # # # # # # # # #
+# system dirs
+mount --make-rprivate				/	# in case we are under container
+
+mkdir -p							/proc
+mount -t proc 			proc		/proc		-o nodev,noexec,nosuid
+
+mkdir -p							/sys
+mount -t sysfs			sysfs		/sys		-o nodev,noexec,nosuid
+
+mkdir -p					-m 0755	/dev
+mount -t devtmpfs		udev		/dev
+mkdir -p							/dev/pts
+mount -t devpts			devpts		/dev/pts	-o noexec,nosuid,gid=5,mode=0620
+
+# # # # # # # # # # # # # #
+export bootlog=/boot.log
+. /init-scripts/logger-lib
+
+# # # # # # # # # # # # # #
+# parse root
+root=$(/init-scripts/parse-rootfs)
+msg_info "ROOT:$root"
+
+if [ "$root" != 'none' ]; then
+	msg_info 'loading hardware drivers -->'
+	check_err /init-scripts/preload-modules
+	msg_info 'loading hardware drivers <--'
+fi
+
+# # # # # # # # # # # # # #
+# switch root
+if [ -n "$root" ]; then
+	dev=$(/init-scripts/wait-dev $root)
+	msg_info "DEV: $dev"
+
+	live=$(/init-scripts/parse-live)
+	if [ -z "$live" ]; then
+		msg_info "NORMAL: $dev"
+		exec /init-scripts/try-normal "$dev"
+	else
+		msg_info "LIVE: ($dev)$live"
+		exec /init-scripts/try-live "$dev" "$live"
+	fi
+fi
+
+# # # # # # # # # # # # # #
+# rescue shell
+/init-scripts/rescue-shell

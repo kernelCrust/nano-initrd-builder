@@ -1,0 +1,4 @@
+#
+.ENV
+/rootfs
+/work-dir

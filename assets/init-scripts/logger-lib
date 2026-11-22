@@ -1,0 +1,30 @@
+#!/bin/sh
+
+
+msg_info() {
+	printf '[\033[34m INFO \033[0m] %s\n' "$*" >&2
+	printf '[I] %s\n' "$*" >>"$bootlog"
+}
+
+msg_ok() {
+	printf '[\033[32m   OK \033[0m] %s\n' "$*" >&2
+	printf '[+] %s\n' "$*" >>"$bootlog"
+}
+
+msg_err() {
+	printf '[\033[31m  ERR \033[0m] %s\n' "$*" >&2
+	printf '[E] %s\n' "$*" >>"$bootlog"
+}
+
+# # # # # # # # # # # # # #
+check_err() {
+	_err=$("$@" 2>&1 >/dev/console)
+	_rc=$?
+	
+	if [ -n "$_err" ] || [ "$_rc" -gt 0 ]; then
+		msg_err "($@)->($_rc) : <$_err>"
+	fi
+	
+	return $_rc
+}
+

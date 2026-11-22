@@ -1,0 +1,55 @@
+#!/bin/sh
+
+. /init-scripts/logger-lib
+
+dev="$1"
+live="$2"
+
+squashed_system="/mnt/media$live"
+
+# # # # # # # # # # # # # #
+msg_info '========================'
+msg_info '=    LIVE boot mode    ='
+msg_info '========================'
+if [ -n "$dev" ]; then
+	msg_info "going to load main sytem from: <$dev>"
+	# /mnt/media  - mounting stick/CD/.. with squashfs image
+	# /mnt/squash - mounting SquashFS
+	# /mnt/rw     - RW layers of OverlayFS
+	# /new_root   - mounting next RootFS
+	mkdir -p /mnt/media /mnt/squash /mnt/rw /new_root
+	
+	# # # # # # # # # # # # # #
+	if check_err mount -o ro "$dev" /mnt/media; then
+		msg_ok '1: /mnt/media'
+
+		if check_err [ -f "$squashed_system" ]; then
+			msg_ok "2: $squashed_system"
+
+			if check_err mount -t squashfs "$squashed_system" /mnt/squash; then
+				msg_ok '3: /mnt/squash'
+
+				if check_err mount -t tmpfs tmpfs /mnt/rw; then
+					msg_ok '4: /mnt/rw'
+
+					mkdir -p /mnt/rw/upper /mnt/rw/work
+					if check_err mount -t overlay overlay \
+						-o lowerdir=/mnt/squash,upperdir=/mnt/rw/upper,workdir=/mnt/rw/work \
+							/new_root; then
+						msg_ok '5: overlay->/new_root'
+
+						mkdir -p /new_root/lib/live/media
+						if check_err mount --move /mnt/media /new_root/lib/live/media; then
+							msg_ok '6: move /mnt/media'
+							msg_info 'preparing to switch ..'
+							exec env -i /init-scripts/switch-root
+						fi
+					fi
+				fi
+			fi
+		fi
+	fi
+fi
+
+# # # # # # # # # # # # # #
+exec /init-scripts/rescue-shell "live-boot failed. try cat $bootlog"

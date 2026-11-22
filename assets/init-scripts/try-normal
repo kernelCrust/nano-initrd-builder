@@ -1,0 +1,22 @@
+#!/bin/sh
+
+. /init-scripts/logger-lib
+
+msg_info '========================'
+msg_info '=   NORMAL boot mode   ='
+msg_info '========================'
+
+dev="$1"
+
+msg_info "going to load main sytem from: <$dev>"
+mkdir -p /new_root
+
+# # # # # # # # # # # # # #
+if check_err mount -o ro $dev /new_root; then
+	msg_ok '/new_root'
+	msg_info 'preparing to switch ..'
+	exec env -i /init-scripts/switch-root
+fi
+
+# # # # # # # # # # # # # #
+exec /init-scripts/rescue-shell "normal-boot failed. try cat $bootlog"

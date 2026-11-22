@@ -1,0 +1,23 @@
+#!/bin/sh
+
+
+modprobe crc32c_generic	# Core software checksum engine for EXT4
+modprobe virtio_blk		# Core VirtIO-Block controller driver
+modprobe virtio_scsi	# Advanced VirtIO-SCSI controller driver
+modprobe nvme			# PCIe Non-Volatile Memory Express driver
+modprobe ahci			# Standard Advanced Host Controller Interface
+modprobe xhci-pci		# USB 3.0+ host controller interface
+modprobe ehci-pci		# USB 2.0 host controller interface
+modprobe uas			# High-speed USB Attached SCSI Protocol (USB 3.0+)
+modprobe usb-storage	# Standard Mass Storage protocol (USB 2.0 fallback)
+modprobe sd_mod			# SCSI disk driver (creates block devices)
+modprobe ext4			# Linux standard filesystem with journaling
+modprobe vfat			# FAT32 filesystem support for boot media
+modprobe exfat			# exFAT filesystem support for boot media
+modprobe nls_utf8		# UTF-8 character encoding for proper file names
+modprobe squashfs		# Mounts compressed rootfs system images
+modprobe overlay		# Combines SquashFS (RO) and RAM (RW) layers
+modprobe loop			# Disk images as virtual block dev
+modprobe sr_mod			# optical CD-ROM (SCSI/SATA/IDE)
+modprobe isofs			# ISO 9660 FS
+modprobe ata_piix		# legacy IDE/SATA for Intel PIIX/ICH

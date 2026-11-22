@@ -1,0 +1,13 @@
+#!/bin/sh
+
+root=""
+
+for param in $(cat /proc/cmdline); do
+	case "$param" in
+		root=*)
+			root="${param#root=}"
+			;;
+	esac
+done
+
+echo "$root"

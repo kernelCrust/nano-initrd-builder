@@ -1,0 +1,36 @@
+#!/bin/sh
+
+. /init-scripts/logger-lib
+
+wait=${wait:-10}
+msg_info "Waiting ($wait s) for storage devices to settle: $1" 1>&2
+
+# # # # # # # # # # # # # #
+i=0
+while [ "$i" -lt "$wait" ]; do
+	case "$1" in
+		UUID=*|LABEL=*)
+				dev=$(findfs "$1")
+				if [ -n "$dev" ]; then
+				   msg_ok "$dev"
+				   echo "$dev"
+				   exit 0
+				fi
+				;;
+		*)
+				if [ -b "$1" ]; then
+				   msg_ok "$1"
+				   echo "$1"
+				   exit 0
+				fi
+				;;
+	esac
+
+	echo -n ' . ' 1>&2
+	sleep 1;
+	i=$((i + 1))
+done
+
+# # # # # # # # # # # # # #
+msg_err "EXCEEDED $wait s"
+exit 1
